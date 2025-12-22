@@ -13,17 +13,18 @@ function CategoryCard({ category }) {
   const [selected, setSelected] = useState(null);
 
   // Auto-select cheapest option
-  useEffect(() => {
-    let min = { name: null, price: Infinity };
+ useEffect(() => {
+  // 1. Try cheapest priced option
+  let cheapest = category.children.find(c => typeof c.price === "number");
 
-    category.children.forEach((c) => {
-      if (c.price && c.price < min.price) {
-        min = { name: c.name, price: c.price };
-      }
-    });
+  // 2. If no price exists, select first option
+  if (!cheapest) {
+    cheapest = category.children[0];
+  }
 
-    setSelected(min.name);
-  }, [category]);
+  setSelected(cheapest?.name || null);
+}, [category]);
+
 
   const selectedItem = category.children.find(
     (c) => c.name === selected
