@@ -1,0 +1,206 @@
+/* =========================
+   OVERLAY
+========================= */
+.cc-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 13, 0.8);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+/* =========================
+   MODAL
+========================= */
+.cc-modal {
+  width: 100%;
+  max-width: 640px;
+  background: linear-gradient(145deg, #1a0b22, #2e0048);
+  border-radius: 22px;
+  padding: 26px 30px;
+  color: #e8d8ff;
+  box-shadow: 0 25px 70px rgba(180, 76, 255, 0.45);
+  animation: neonPop 0.25s ease;
+}
+
+/* =========================
+   HEADER
+========================= */
+.cc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.cc-header h2 {
+  font-size: 24px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.cc-close {
+  border: none;
+  background: transparent;
+  font-size: 26px;
+  cursor: pointer;
+  color: #e8d8ff;
+  transition: color 0.2s ease;
+}
+
+.cc-close:hover {
+  color: #ff7ad9;
+}
+
+/* =========================
+   STATUS
+========================= */
+.cc-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: #cbb8f9;
+  margin-bottom: 14px;
+}
+
+.cc-dot {
+  width: 8px;
+  height: 8px;
+  background: #25ffb4;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(37, 255, 180, 0.9);
+}
+
+.cc-status-text {
+  font-weight: 600;
+}
+
+.cc-time {
+  margin-left: auto;
+  font-weight: 700;
+  color: #25ffb4;
+}
+
+/* =========================
+   DESCRIPTION
+========================= */
+.cc-desc {
+  font-size: 14px;
+  color: #d9c2ff;
+  margin-bottom: 18px;
+  line-height: 1.5;
+}
+
+.cc-desc span {
+  color: #b9a1ff;
+}
+
+/* =========================
+   SELECT DROPDOWN
+========================= */
+.cc-select {
+  width: 100%;
+  padding: 14px 18px;
+  border-radius: 999px;
+  border: 1px solid #7a00cc;
+  font-size: 15px;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+
+  background: rgba(255, 255, 255, 0.96);
+  color: #2e0048;
+  transition: all 0.25s ease;
+}
+
+.cc-select:hover {
+  border-color: #b44cff;
+}
+
+.cc-select:focus {
+  border-color: #b44cff;
+  box-shadow: 0 0 0 3px rgba(180, 76, 255, 0.35);
+}
+
+/* =========================
+   ACTION BUTTONS (AFTER SELECT)
+========================= */
+.cc-actions {
+  margin-top: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* PRIMARY BUTTON */
+/* PRIMARY BUTTON – PURPLE NEON */
+.cc-btn-primary {
+  width: 100%;
+  padding: 15px;
+  border-radius: 999px;
+  border: none;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+ border: 1px solid rgba(180, 76, 255, 0.6);
+  background: linear-gradient(135deg, #b44cff, #7a00cc);
+  color: #ffffff;
+  box-shadow: 0 10px 26px rgba(180, 76, 255, 0.6);
+  transition: all 0.3s ease;
+}
+
+.cc-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 34px rgba(180, 76, 255, 0.85);
+}
+
+/* SECONDARY BUTTON */
+.cc-btn-secondary {
+  width: 100%;
+  padding: 15px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+
+  background: rgba(255, 255, 255, 0.95);
+  color: #111827;
+  border: 1px solid #e5e7eb;
+  transition: all 0.25s ease;
+}
+
+.cc-btn-secondary:hover {
+  background: #f3f4f6;
+}
+
+/* =========================
+   ANIMATION
+========================= */
+@keyframes neonPop {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* =========================
+   MOBILE
+========================= */
+@media (max-width: 480px) {
+  .cc-modal {
+    margin: 0 16px;
+    padding: 22px;
+  }
+
+  .cc-header h2 {
+    font-size: 20px;
+  }
+}
