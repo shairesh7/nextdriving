@@ -1,90 +1,141 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import "./CategoryModal.css";
-
 const API_URL =
   "https://newsameep-backend.go-kar.net/api/dummy-categories";
 
 export default function ChooseCategoryModal({ onClose }) {
-  const [seconds, setSeconds] = useState(0);
+  
   const [categories, setCategories] = useState([]);
-  const [selected, setSelected] = useState("");
+  const [search, setSearch] = useState("");
+  const [selected, setSelected] = useState(null);
+  const [step, setStep] = useState("CATEGORY"); // CATEGORY | CONNECT
+  const [loading, setLoading] = useState(true);
+const [elapsed, setElapsed] = useState(0);
 
-  /* ⏱ Timer */
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setSeconds((s) => s + 1);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
+useEffect(() => {
+  const i = setInterval(() => {
+    setElapsed((t) => t + 1);
+  }, 1000);
+
+  return () => clearInterval(i);
+}, []);
+const minutes = Math.floor(elapsed / 60);
+const seconds = elapsed % 60;
 
   /* 📡 Fetch categories */
   useEffect(() => {
-    async function load() {
-      const res = await fetch(API_URL);
-      const data = await res.json();
-      setCategories(data);
+    async function loadCategories() {
+      try {
+        const res = await fetch(API_URL);
+        const data = await res.json();
+        setCategories(data);
+      } catch (e) {
+        console.error("Failed to load categories");
+      } finally {
+        setLoading(false);
+      }
     }
-    load();
+    loadCategories();
   }, []);
 
-  const formatTime = (s) => {
-    const min = String(Math.floor(s / 60)).padStart(2, "0");
-    const sec = String(s % 60).padStart(2, "0");
-    return `${min}:${sec}`;
-  };
+  /* 🔍 Filter (CLIENT SIDE) */
+  const filteredCategories = categories.filter((cat) =>
+    cat.name.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
-    <div className="cc-overlay" onClick={onClose}>
-      <div className="cc-modal" onClick={(e) => e.stopPropagation()}>
+    <div className="modal-overlay">
+      <div className="category-modal">
+        {/* ❌ Close */}
+        <button className="close-btn" onClick={onClose}>✕</button>
+<button
+  className="back-btn"
+  onClick={() => {
+    if (step === "CONNECT") {
+      setStep("CATEGORY");
+    } else {
+      onClose();
+    }
+  }}
+>
+  ←
+</button>
 
-        {/* HEADER */}
-        <div className="cc-header">
-          <h2>Choose a Category</h2>
-          <button className="cc-close" onClick={onClose}>×</button>
-        </div>
+        {/* ⏱ Timer */}
+    <div className="timer-circle">
+  {`${minutes.toString().padStart(2, "0")}:${seconds
+    .toString()
+    .padStart(2, "0")}`}
+</div>
 
-        {/* STATUS */}
-        <div className="cc-status">
-          <span className="cc-dot" />
-          <span className="cc-status-text">Creating preview</span>
-          <span className="cc-time">{formatTime(seconds)}</span>
-        </div>
 
-        {/* DESCRIPTION */}
-        <p className="cc-desc">
-          Select the category that best matches your business.
-          <br />
-          <span>(This is a preview; selection is not saved yet.)</span>
-        </p>
+        {step === "CATEGORY" && (
+          <>
+            <p className="title-text">
+              Select the category that best matches your business
+            </p>
 
-        {/* DROPDOWN */}
-        <select
-          className="cc-select"
-          value={selected}
-          onChange={(e) => setSelected(e.target.value)}
-        >
-          <option value="">Select a category</option>
-          {categories.map((cat) => (
-            <option key={cat._id} value={cat.name}>
-              {cat.name}
-            </option>
-          ))}
-        </select>
+            <input
+              className="search-input"
+              placeholder="Search category..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
 
-        {/* ACTIONS – SHOW ONLY AFTER SELECT */}
-        {selected && (
-          <div className="cc-actions">
-            <button className="cc-btn-primary">
-              Connect Your Google Business
+            <div className="category-grid">
+              {loading && <p className="loading">Loading...</p>}
+
+              {!loading && filteredCategories.length === 0 && (
+                <div className="not-found">
+                  <p>Didn’t find your business?</p>
+                  
+                </div>
+              )}
+
+              {filteredCategories.map((cat) => (
+                <div
+                  key={cat._id || cat.id}
+                  className={`category-card ${
+                    selected?.name === cat.name ? "active" : ""
+                  }`}
+                  onClick={() => setSelected(cat)}
+                >
+                  <img src={cat.imageUrl} alt={cat.name} />
+                  <span>{cat.name}</span>
+                </div>
+              ))}
+            </div>
+
+            <button
+              className="next-btn"
+              disabled={!selected}
+              onClick={() => setStep("CONNECT")}
+            >
+              Next
             </button>
-
-            <button className="cc-btn-secondary">
-              Continue With Mobile Number
-            </button>
-          </div>
+          </>
         )}
+{step === "CONNECT" && (
+  <div className="connect-section">
+    <div className="selected-pill selected-category">
+      <img
+        src={selected.imageUrl}
+        alt={selected.name}
+        className="selected-image"
+      />
+      <span className="selected-name">{selected.name}</span>
+    </div>
+
+    <button className="google-btn">
+      Connect your Google Business
+    </button>
+
+    <button className="phone-btn">
+      Continue with Phone Number
+    </button>
+  </div>
+)}
 
       </div>
     </div>
