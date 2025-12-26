@@ -30,7 +30,6 @@ export default function ChooseCategoryModal({ onClose }) {
     GOOGLE_RESULTS: 4,
     VERIFY_PHONE: 5,
   };
-
   const TOTAL_STEPS = 8;
 
   /* TIMER */
@@ -70,37 +69,40 @@ export default function ChooseCategoryModal({ onClose }) {
   }, [step]);
 
   /* GOOGLE SEARCH */
-const handleGoogleSearch = async () => {
-  if (businessQuery.trim().length < 3) {
-    setCaptchaError("Enter at least 3 characters to search");
-    return;
-  }
+  const handleGoogleSearch = async () => {
+    if (businessQuery.trim().length < 3) {
+      setCaptchaError("Enter at least 3 characters");
+      return;
+    }
+    if (captchaInput !== captcha) {
+      setCaptchaError("Captcha does not match");
+      return;
+    }
 
-  if (captchaInput !== captcha) {
-    setCaptchaError("Captcha does not match");
-    return;
-  }
-
-  try {
     const res = await fetch(
       `https://newsameep-backend.go-kar.net/api/google/places/search?query=${encodeURIComponent(
         businessQuery
       )}`
     );
-
     const data = await res.json();
     setGoogleResults(data.results || []);
     setStep("GOOGLE_RESULTS");
-  } catch (err) {
-    console.error("Google search failed", err);
-  }
-};
+  };
 
-
-  /* SELECT BUSINESS (NO STEP CHANGE HERE) */
-  const fetchBusinessDetails = (biz) => {
+  /* SELECT RESULT (ONLY HIGHLIGHT) */
+  const handleSelectBusiness = (biz) => {
     setSelectedBusiness(biz);
     setActivePlaceId(biz.placeId);
+  };
+
+  /* FETCH DETAILS API (PHONE COMES HERE) */
+  const fetchBusinessDetails = async () => {
+    const res = await fetch(
+      `https://newsameep-backend.go-kar.net/api/google/places/details?placeId=${activePlaceId}`
+    );
+    const data = await res.json();
+    setSelectedBusiness(data.place); // ✅ phone exists here
+    setStep("VERIFY_PHONE");
   };
 
   /* BACK */
@@ -111,6 +113,12 @@ const handleGoogleSearch = async () => {
     else if (step === "CONNECT") setStep("CATEGORY");
     else onClose();
   };
+
+  const phoneNumber =
+    selectedBusiness?.formattedPhoneNumber ||
+    selectedBusiness?.internationalPhoneNumber ||
+    selectedBusiness?.phone ||
+    "";
 
   return (
     <div className="modal-overlay">
@@ -132,9 +140,9 @@ const handleGoogleSearch = async () => {
           <>
             <input
               className="search-input"
-              placeholder="Search category..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search category..."
             />
 
             <div className="category-grid">
@@ -144,7 +152,9 @@ const handleGoogleSearch = async () => {
                     cat && (
                       <div
                         key={cat.id || cat._id}
-                        className={`category-card ${selected?.name === cat.name ? "active" : ""}`}
+                        className={`category-card ${
+                          selected?.name === cat.name ? "active" : ""
+                        }`}
                         onClick={() => setSelected(cat)}
                       >
                         <img src={cat.imageUrl} />
@@ -165,39 +175,25 @@ const handleGoogleSearch = async () => {
         )}
 
         {/* CONNECT */}
-{/* ================= CONNECT ================= */}
-{step === "CONNECT" && selected && (
-  <div className="connect-section">
+        {step === "CONNECT" && selected && (
+          <div className="connect-section">
+            <div className="selected-category-card">
+              <img src={selected.imageUrl} className="selected-category-image" />
+              <div>
+                <p className="selected-label">Selected Category</p>
+                <p className="selected-category-name">{selected.name}</p>
+              </div>
+            </div>
 
-    {/* ✅ SELECTED CATEGORY DISPLAY */}
-    <div className="selected-category-card">
-      <img
-        src={selected.imageUrl}
-        alt={selected.name}
-        className="selected-category-image"
-      />
-      <div className="selected-category-info">
-        <p className="selected-label">Selected Category</p>
-        <p className="selected-category-name">{selected.name}</p>
-      </div>
-    </div>
+            <button className="google-btn" onClick={() => setStep("GOOGLE_SEARCH")}>
+              Connect your Google Business
+            </button>
 
-    {/* ACTION BUTTONS */}
-    <button
-      className="google-btn"
-      onClick={() => setStep("GOOGLE_SEARCH")}
-    >
-      Connect your Google Business
-    </button>
-
-    <button
-      className="phone-btn"
-      onClick={() => setStep("VERIFY_PHONE")}
-    >
-      Continue with Mobile Number
-    </button>
-  </div>
-)}
+            <button className="phone-btn" onClick={() => setStep("VERIFY_PHONE")}>
+              Continue with Mobile Number
+            </button>
+          </div>
+        )}
 
         {/* GOOGLE SEARCH */}
         {step === "GOOGLE_SEARCH" && (
@@ -216,102 +212,89 @@ const handleGoogleSearch = async () => {
 
             <input
               className="captcha-input"
-              placeholder="Enter captcha"
               value={captchaInput}
               onChange={(e) => setCaptchaInput(e.target.value)}
+              placeholder="Enter captcha"
             />
 
             {captchaError && <p className="captcha-error">{captchaError}</p>}
 
             <button
-  className="google-search-btn"
-  disabled={businessQuery.trim().length < 3}
-  onClick={handleGoogleSearch}
->
-  Search
-</button>
-
+              className="google-search-btn"
+              disabled={businessQuery.trim().length < 3}
+              onClick={handleGoogleSearch}
+            >
+              Search
+            </button>
           </div>
         )}
 
         {/* GOOGLE RESULTS */}
         {step === "GOOGLE_RESULTS" && (
           <div className="google-results-section">
+            <p className="results-title">Search Results</p>
+
             <div className="google-results-list">
               {googleResults.map((biz) => (
                 <div
                   key={biz.placeId}
-                  className={`google-result-card ${activePlaceId === biz.placeId ? "active" : ""}`}
-                  onClick={() => fetchBusinessDetails(biz)}
+                  className={`google-result-card ${
+                    activePlaceId === biz.placeId ? "active" : ""
+                  }`}
+                  onClick={() => handleSelectBusiness(biz)}
                 >
-                  <p>{biz.name}</p>
-                  <p>{biz.address}</p>
-                  <p>⭐ {biz.rating} ({biz.userRatingsTotal})</p>
+                  <p className="google-result-name">{biz.name}</p>
+                  <p className="google-result-address">{biz.address}</p>
                 </div>
               ))}
             </div>
 
-            {selectedBusiness && (
-              <>
-                <div className="selected-business-card">
-                  <p><b>{selectedBusiness.name}</b></p>
-                  <p>{selectedBusiness.address}</p>
-                </div>
-
-                <button className="confirm-btn" onClick={() => setStep("VERIFY_PHONE")}>
-                  Continue & Verify Phone
-                </button>
-              </>
+            {activePlaceId && (
+              <button className="confirm-btn" onClick={fetchBusinessDetails}>
+                Continue & Verify Phone
+              </button>
             )}
           </div>
         )}
 
-        {/* VERIFY PHONE */}
+        {/* STEP 5 – VERIFY PHONE */}
         {step === "VERIFY_PHONE" && selectedBusiness && (
-  <div className="verify-phone-section">
-    <p className="section-title">Confirm Business Details</p>
+          <div className="verify-phone-section">
+            <p className="section-title">Business Details</p>
 
-    <div className="details-card">
-      <p>
-        <b>Business Name:</b> {selectedBusiness.name}
-      </p>
+            <div className="details-card">
+              <p><b>Business Name:</b> {selectedBusiness.name}</p>
+              <p><b>Address:</b> {selectedBusiness.address}</p>
+              <p>
+                <b>Latitude:</b> {selectedBusiness.location?.lat}<br />
+                <b>Longitude:</b> {selectedBusiness.location?.lng}
+              </p>
+              <p><b>Phone:</b> {phoneNumber || "Not available"}</p>
+            </div>
 
-      <p>
-        <b>Address:</b> {selectedBusiness.address}
-      </p>
+          <div className="verify-box">
+  <p><b>Verify Phone:</b> {phoneNumber || "-"}</p>
 
-      <p>
-        <b>Latitude:</b> {selectedBusiness.location?.lat}
-      </p>
+  {/* SEND OTP */}
+  <button
+    className="otp-btn"
+    disabled={!phoneNumber}
+    onClick={() => alert("OTP Sent")}
+  >
+    Send OTP
+  </button>
 
-      <p>
-        <b>Longitude:</b> {selectedBusiness.location?.lng}
-      </p>
+  {/* CONTINUE WITHOUT PHONE */}
+  <button
+    className="bypass-btn"
+    onClick={() => alert("Continued without phone verification")}
+  >
+    Continue without phone
+  </button>
+</div>
 
-      <p>
-        <b>Phone:</b>{" "}
-        {selectedBusiness.phone || "Not available"}
-      </p>
-    </div>
-
-    <hr className="divider" />
-
-    <div className="verify-box">
-      <p className="verify-title">
-        Verify Phone:{" "}
-        <span>{selectedBusiness.phone || "-"}</span>
-      </p>
-
-      <button className="otp-btn">Send OTP</button>
-
-      <label className="bypass-row">
-        <input type="checkbox" />
-        <span>Bypass OTP</span>
-      </label>
-    </div>
-  </div>
-)}
-
+          </div>
+        )}
       </div>
     </div>
   );
