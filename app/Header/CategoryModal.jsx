@@ -165,16 +165,39 @@ const handleGoogleSearch = async () => {
         )}
 
         {/* CONNECT */}
-        {step === "CONNECT" && (
-          <div className="connect-section">
-            <button className="google-btn" onClick={() => setStep("GOOGLE_SEARCH")}>
-              Connect your Google Business
-            </button>
-            <button className="phone-btn" onClick={() => setStep("VERIFY_PHONE")}>
-              Continue with Mobile Number
-            </button>
-          </div>
-        )}
+{/* ================= CONNECT ================= */}
+{step === "CONNECT" && selected && (
+  <div className="connect-section">
+
+    {/* ✅ SELECTED CATEGORY DISPLAY */}
+    <div className="selected-category-card">
+      <img
+        src={selected.imageUrl}
+        alt={selected.name}
+        className="selected-category-image"
+      />
+      <div className="selected-category-info">
+        <p className="selected-label">Selected Category</p>
+        <p className="selected-category-name">{selected.name}</p>
+      </div>
+    </div>
+
+    {/* ACTION BUTTONS */}
+    <button
+      className="google-btn"
+      onClick={() => setStep("GOOGLE_SEARCH")}
+    >
+      Connect your Google Business
+    </button>
+
+    <button
+      className="phone-btn"
+      onClick={() => setStep("VERIFY_PHONE")}
+    >
+      Continue with Mobile Number
+    </button>
+  </div>
+)}
 
         {/* GOOGLE SEARCH */}
         {step === "GOOGLE_SEARCH" && (
