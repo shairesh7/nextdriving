@@ -33,6 +33,39 @@ export default function ChooseCategoryModal({ onClose }) {
 
 const [selectedSearchBusiness, setSelectedSearchBusiness] = useState(null);
 
+const handleContinueWithoutOtp = async () => {
+  try {
+    const res = await fetch(
+      "https://newsameep-backend.go-kar.net/api/dummy-vendors",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          status: "Registered",
+        }),
+      }
+    );
+
+    if (!res.ok) {
+      throw new Error("Failed to register vendor");
+    }
+
+    const data = await res.json();
+    console.log("Vendor registered:", data);
+
+    // ✅ OPTIONAL: close modal or move to success step
+    onClose(); 
+    // or setStep("SUCCESS");
+
+  } catch (error) {
+    console.error(error);
+    alert("Something went wrong. Please try again.");
+  }
+};
+
+
   /* ================= TIMER ================= */
   useEffect(() => {
     const i = setInterval(() => setElapsed((t) => t + 1), 1000);
@@ -374,9 +407,10 @@ const fetchBusinessDetails = async () => {
       Send OTP
     </button>
 
-    <button className="bypass" type="checkbox">
-      Continue without OTP
-    </button>
+    <button className="bypass-btn" onClick={handleContinueWithoutOtp}>
+  Continue without OTP
+</button>
+
 
   </div>
 )}
